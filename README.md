@@ -125,8 +125,8 @@ accelerate launch --mixed_precision="fp16" src/diffusion/train_text_to_imagecbcb
 
 FairGen utilizes a dual-stream training process:
 
-1. Regularization Stream: Maintains image fidelity using the original dataset.
-2. Alignment Stream: Optimizes for physician preference using DPO.
+*  Regularization Stream: Maintains image fidelity using the original dataset.
+*  Alignment Stream: Optimizes for physician preference using DPO.
 
 Key Flags:
 
