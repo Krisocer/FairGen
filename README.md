@@ -121,7 +121,7 @@ accelerate launch --mixed_precision="fp16" src/diffusion/train_text_to_imagecbcb
   --lr_warmup_steps=0 \
   --output_dir=$OUTPUT_DIR
 ```
-### 3.2 Train Baseline Models (Vanilla / CBCB / CBDM / etc..)
+### 3.2 Train FairGen Models
 
 FairGen utilizes a dual-stream training process:
 
