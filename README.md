@@ -65,7 +65,7 @@ Format:
 
 ## 3. Training Scripts
 
-We provide unified training scripts that handle different modalities (Skin, MRI, Chest X-ray) via the `--modality` flag.
+We provide unified training scripts that handle different modalities (Skin, MRI, Chest X-ray) via the `--modality` flag, located on `diffusers/examples/text_to_image` folder.
 
 ### 3.1 Train Baseline Models (Vanilla / CBCB / CBDM / etc..)
 
@@ -102,7 +102,7 @@ export MODEL_NAME="CompVis/stable-diffusion-v1-4"
 export TRAIN_DIR="/path/to/your/dataset_mri"
 export OUTPUT_DIR="./checkpoints/sd_mri_cbcb"
 
-accelerate launch --mixed_precision="fp16" src/diffusion/train_text_to_imagecbcb.py \
+accelerate launch --mixed_precision="fp16" /path/to/your/train_text_to_imagecbcb.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir=$TRAIN_DIR \
   --modality="mri" \
@@ -144,7 +144,7 @@ export TRAIN_DIR="/path/to/your/dataset_skin"
 export DPO_DIR="/path/to/your/physician_preference_data"
 export OUTPUT_DIR="./checkpoints/sd_skin_fairgen"
 
-accelerate launch --mixed_precision="fp16" src/diffusion/train_text_to_image_FairGen.py \
+accelerate launch --mixed_precision="fp16" /path/to/your/train_text_to_image_FairGen.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir=$TRAIN_DIR \
   --modality="skin" \
@@ -185,3 +185,79 @@ The `--modality` flag automatically adjusts internal parameters (e.g., number of
     *   **Decrease (e.g., 0.1):** If the training becomes unstable or image quality degrades (artifacts appear).
 *   `--learning_rate`:
     *   For DPO fine-tuning, a lower learning rate (e.g., `1e-5` or `5e-6`) is often more stable than training from scratch.
+
+# Inference Guide for FairGen
+
+This guide explains how to generate synthetic medical images using trained FairGen models (or baselines like CBCB, CBDM, Vanilla SD).
+
+## 1. Usage
+
+We provide a universal inference script `src/inference.py`.
+
+## 2. Examples (e.g Generate Skin Images)
+
+Skin modality includes 15 subgroups (3 skin tones $\times$ 5 diseases).
+
+```bash
+export UNET_PATH="/ocean/projects/ccr200024p/zli27/sd_xray/sd_skin_model/DPO_fairgen_model/checkpoint-15000/unet"
+export OUT_DIR="/ocean/projects/ccr200024p/zli27/sd_xray/output/DPO_sd_skin/fairgen"
+
+python /path/to/your/inference.py \
+  --modality="skin" \
+  --model_path=$UNET_PATH \
+  --output_dir=$OUT_DIR \
+  --num_images_per_class=1000 \
+  --batch_size=4
+```
+
+# Downstream Guide for FairGen
+
+This guide outlines the process for training downstream diagnostic classifiers using datasets augmented by FairGen. We provide specialized scripts for three medical imaging modalities: **Chest X-ray**, **Dermatology**, and **Brain MRI**.
+
+## 1. Overview
+
+The downstream task involves training a Vision Transformer (ViT) classifier to diagnose diseases. To address class imbalance and demographic bias, our training pipeline incorporates:
+
+*   **Dual-Label Dataset**: Handles both disease labels (for classification) and sensitive attribute labels (for fairness evaluation).
+*   **Stratified Splitting**: Ensures train/val/test sets maintain demographic distributions.
+*   **Reweighting Strategy**: Dynamically adjusts sampling weights based on subgroup performance (Adaptive Inverse-Performance Reweighting).
+
+
+## 2. Data Preparation
+
+### Directory Structure
+
+The training scripts expect the data to be organized in an `ImageFolder` format, where subfolder names contain both **demographic** and **disease** information.
+
+```text
+input_dataset_root/
+├── downstream_skin/
+│   ├── African_people_allergic_contact_dermatitis/
+│   ├── African_people_basal_cell_carcinoma/
+│   ├── African_people_lichen_planus/
+│   ├── African_people_psoriasis/
+│   ├── African_people_squamous_cell_carcinoma/
+│   ├── Asian_people_allergic_contact_dermatitis/
+│   ├── ... (other Asian subfolders)
+│   ├── Caucasian_people_allergic_contact_dermatitis/
+│   └── ... (other Caucasian subfolders)
+├── downstream_xray/
+│   ├── female_COVID19/
+│   ├── female_Edema/
+│   ├── female_Lung_Opacity/
+│   ├── female_No_Finding/
+│   ├── female_Pleural_Effusion/
+│   ├── male_COVID19/
+│   ├── male_Edema/
+│   ├── male_Lung_Opacity/
+│   ├── male_No_Finding/
+│   └── male_Pleural_Effusion/
+└── downstream_mri/
+    ├── Demented_Age_Above_75/
+    ├── Demented_Age_Below_75/
+    ├── Nondemented_Age_Above_75/
+    └── Nondemented_Age_Below_75/
+```
+
+And you should also make sure your augmentation dataset directory structure shuold also remain same. You could sync it when you inference the generated diffusion model.
+
