@@ -261,3 +261,20 @@ input_dataset_root/
 
 And you should also make sure your augmentation dataset directory structure shuold also remain same. You could sync it when you inference the generated diffusion model.
 
+## 3. Training Script Examples
+
+I will take chest xray for example, representing **Dementia status** (Demented vs. Nondemented).
+
+*Note: The MRI script uses a lower default learning rate (`1e-5`) for stability.*
+
+**Command:**
+
+```bash
+python src/downstream/classify_reweight_mri.py \
+  --data "/path/to/real_mri_data" \
+  --aug_data "/path/to/fairgen_mri_data" \
+  --lr 1e-5 \
+  --batchsize 64 \
+  --epochs 10 \
+  --best_worst
+```
