@@ -1,8 +1,27 @@
 # FairGen
 
-# Training Guide for FairGen
+FairGen is a fairness-aware diffusion framework for medical image synthesis and downstream diagnosis. It is designed for three medical imaging settings, including dermatology, brain MRI, and chest X-ray, and focuses on improving coverage for underrepresented demographic subgroups while preserving image quality and diagnostic utility.
 
-This guide provides step-by-step instructions for training the **FairGen** framework and associated baselines (Vanilla SD, CBCB, CBDM, etc.) for medical image synthesis.
+This repository includes training, inference, and downstream evaluation code for FairGen and related baselines such as Vanilla Stable Diffusion, CBCB, and CBDM.
+
+<p align="center">
+  <img src="static/flow.jpg" alt="Overview of the FairGen pipeline across dermatology, MRI, and chest X-ray." width="1100">
+</p>
+
+<p align="center">
+  <em>FairGen pipeline overview. Starting from imbalanced medical datasets, FairGen combines subgroup-aware data balancing, preference-aligned diffusion training, and downstream augmentation to improve fairness across sensitive attributes such as skin tone, age, and gender.</em>
+</p>
+
+## Repository Overview
+
+- Train diffusion backbones for skin, MRI, and chest X-ray synthesis.
+- Align generation with physician preferences using DPO-based supervision.
+- Generate balanced synthetic datasets for underrepresented subgroups.
+- Train downstream diagnostic classifiers with real and synthetic data.
+
+## Training Guide for FairGen
+
+This section provides step-by-step instructions for training FairGen and related baselines for medical image synthesis.
 
 ## 1. Environment Setup
 
@@ -186,7 +205,7 @@ The `--modality` flag automatically adjusts internal parameters (e.g., number of
 *   `--learning_rate`:
     *   For DPO fine-tuning, a lower learning rate (e.g., `1e-5` or `5e-6`) is often more stable than training from scratch.
 
-# Inference Guide for FairGen
+## Inference Guide for FairGen
 
 This guide explains how to generate synthetic medical images using trained FairGen models (or baselines like CBCB, CBDM, Vanilla SD).
 
@@ -210,7 +229,7 @@ python /path/to/your/inference.py \
   --batch_size=4
 ```
 
-# Downstream Guide for FairGen
+## Downstream Guide for FairGen
 
 This guide outlines the process for training downstream diagnostic classifiers using datasets augmented by FairGen. We provide specialized scripts for three medical imaging modalities: **Chest X-ray**, **Dermatology**, and **Brain MRI**.
 
