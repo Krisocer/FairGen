@@ -1,8 +1,15 @@
 # FairGen
 
-FairGen is a fairness-aware diffusion framework for medical image synthesis and downstream diagnosis. It is designed for three medical imaging settings, including dermatology, brain MRI, and chest X-ray, and focuses on improving coverage for underrepresented demographic subgroups while preserving image quality and diagnostic utility.
+Official implementation of **[FairGen: preference-aligned diffusion for demographically equitable medical image synthesis](https://doi.org/10.1038/s41746-026-02868-z)**, published in *npj Digital Medicine* (2026).
+
+FairGen is a fairness-aware diffusion framework for medical image synthesis and downstream diagnosis. It supports three medical imaging settings—dermatology, brain MRI, and chest X-ray—and improves coverage for underrepresented demographic subgroups while preserving image quality and diagnostic utility.
 
 This repository includes training, inference, and downstream evaluation code for FairGen and related baselines such as Vanilla Stable Diffusion, CBCB, and CBDM.
+
+<p align="center">
+  <a href="https://doi.org/10.1038/s41746-026-02868-z"><strong>Paper</strong></a> ·
+  <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=5TZad1kAAAAJ&citation_for_view=5TZad1kAAAAJ:86PQX7AUzd4C"><strong>Google Scholar</strong></a>
+</p>
 
 <p align="center">
   <img src="static/flow.jpg" alt="Overview of the FairGen pipeline across dermatology, MRI, and chest X-ray." width="1100">
@@ -11,6 +18,21 @@ This repository includes training, inference, and downstream evaluation code for
 <p align="center">
   <em>FairGen pipeline overview. Starting from imbalanced medical datasets, FairGen combines subgroup-aware data balancing, preference-aligned diffusion training, and downstream augmentation to improve fairness across sensitive attributes such as skin tone, age, and gender.</em>
 </p>
+
+## Citation
+
+If you find this work useful, please cite:
+
+```bibtex
+@article{li2026fairgen,
+  title   = {{FairGen}: preference-aligned diffusion for demographically equitable medical image synthesis},
+  author  = {Li, Zhimin and Zhang, Ruichen and Tan, Zhen and Aizenstein, Howard J. and Hu, Jingtong and Chen, Tianlong},
+  journal = {npj Digital Medicine},
+  year    = {2026},
+  doi     = {10.1038/s41746-026-02868-z},
+  url     = {https://doi.org/10.1038/s41746-026-02868-z}
+}
+```
 
 ## Repository Overview
 
@@ -40,7 +62,7 @@ conda activate fairgen
 pip install -r requirements.txt
 ```
 
-### Option 2: Using `requirements.txt` (Recommended)
+### Option 2: Manual Installation
 
 If you prefer to install packages manually or `requirements.txt` is not available:
 
@@ -84,9 +106,9 @@ Format:
 
 ## 3. Training Scripts
 
-We provide unified training scripts that handle different modalities (Skin, MRI, Chest X-ray) via the `--modality` flag, located on `diffusers/examples/text_to_image` folder.
+We provide unified training scripts that handle different modalities (Skin, MRI, Chest X-ray) via the `--modality` flag, located in the `diffusers/examples/text_to_image` folder.
 
-### 3.1 Train Baseline Models (Vanilla / CBCB / CBDM / etc..)
+### 3.1 Train Baseline Models (Vanilla / CBCB / CBDM / etc.)
 
 Use this command to train baseline models (e.g., CBCB) without DPO alignment.
 
@@ -213,13 +235,13 @@ This guide explains how to generate synthetic medical images using trained FairG
 
 We provide a universal inference script `src/inference.py`.
 
-## 2. Examples (e.g Generate Skin Images)
+## 2. Example: Generate Skin Images
 
 Skin modality includes 15 subgroups (3 skin tones $\times$ 5 diseases).
 
 ```bash
-export UNET_PATH="/ocean/projects/ccr200024p/zli27/sd_xray/sd_skin_model/DPO_fairgen_model/checkpoint-15000/unet"
-export OUT_DIR="/ocean/projects/ccr200024p/zli27/sd_xray/output/DPO_sd_skin/fairgen"
+export UNET_PATH="./checkpoints/sd_skin_fairgen/checkpoint-15000/unet"
+export OUT_DIR="./outputs/fairgen_skin"
 
 python /path/to/your/inference.py \
   --modality="skin" \
@@ -278,11 +300,11 @@ input_dataset_root/
     └── Nondemented_Age_Below_75/
 ```
 
-And you should also make sure your augmentation dataset directory structure shuold also remain same. You could sync it when you inference the generated diffusion model.
+The augmentation dataset should follow the same directory structure. You can create or synchronize this structure when generating synthetic images with the inference script.
 
 ## 3. Training Script Examples
 
-I will take chest xray for example, representing **Dementia status** (Demented vs. Nondemented).
+The following example trains the brain MRI downstream classifier for **dementia status** (Demented vs. Nondemented).
 
 *Note: The MRI script uses a lower default learning rate (`1e-5`) for stability.*
 
